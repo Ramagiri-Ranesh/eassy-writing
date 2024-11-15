@@ -3,89 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Essay Writing Scorer</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Essay Writing Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .stat-box {
-            background-color: #f8f9fa;
-            padding: 1em;
-            border-radius: 8px;
-            margin-bottom: 1em;
+        body {
+            background-color: #f0f4f8;
+            font-family: Arial, sans-serif;
         }
-        .feedback-section {
-            display: none;
-            background-color: #fff3cd;
-            padding: 1em;
-            border-radius: 8px;
-            margin-top: 1em;
+        #essayEditor {
+            height: 250px;
+            resize: none;
+            border: 2px solid #0d6efd;
         }
-        .error-highlight {
-            color: red;
+        .error-list {
+            color: #dc3545;
+        }
+        .highlight {
+            background-color: #d4edda;
             font-weight: bold;
+            color: #155724;
+        }
+        .timer-box, .prompt-box, .score-box {
+            background-color: #e9f0f8;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .title-section {
+            background-color: #0d6efd;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .submit-btn, .results-box {
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Essay Writing Scorer</h1>
-    
-    <!-- Timer Section -->
-    <div class="text-center mb-4">
-        <strong>Time Remaining:</strong> <span id="timer">20:00</span>
+    <div class="title-section">
+        <h2>Essay Writing Editor</h2>
     </div>
 
-    <!-- Essay Prompt Section -->
-    <div id="essay-prompt" class="alert alert-primary text-center">
-        <strong>Prompt:</strong> <span id="prompt-text">Loading...</span>
+    <!-- Prompt Section -->
+    <div class="mb-3 prompt-box">
+        <h4 id="selectedPrompt">Prompt: India Gate</h4>
+        <button class="btn btn-secondary" onclick="changePrompt()">Change Prompt</button>
     </div>
-    
-    <!-- Writing Area -->
-    <textarea id="essay-input" class="form-control mb-3" rows="8" placeholder="Start typing your essay here..."></textarea>
-    
-    <!-- Real-Time Stats -->
-    <div class="row">
-        <div class="col-md-3">
-            <div class="stat-box text-center">
-                <h5>Spelling Mistakes</h5>
-                <p id="spelling-errors">0</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-box text-center">
-                <h5>Grammar Mistakes</h5>
-                <p id="grammar-errors">0</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-box text-center">
-                <h5>Backspace Count</h5>
-                <p id="backspace-count">0</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-box text-center">
-                <h5>Total Score</h5>
-                <p id="total-score">100</p>
-            </div>
-        </div>
+
+    <!-- Timer Section -->
+    <div class="timer-box mb-4">
+        <h5>Time Remaining: <span id="timer">20:00</span></h5>
     </div>
-    
+
+    <!-- Editor Section -->
+    <div class="mb-3">
+        <textarea class="form-control" id="essayEditor" placeholder="Start typing your essay..."></textarea>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="row text-center">
+        <div class="col-md-3"><p>Total Word Count: <span id="wordCount">0</span></p></div>
+        <div class="col-md-3"><p>Grammar Mistakes: <span id="grammarMistakes">0</span></p></div>
+        <div class="col-md-3"><p>Spelling Mistakes: <span id="spellingMistakes">0</span></p></div>
+        <div class="col-md-3"><p>Backspace Count: <span id="backspaceCount">0</span></p></div>
+    </div>
+
     <!-- Submit Button -->
-    <div class="text-center mt-4">
-        <button id="new-prompt" class="btn btn-primary">Get New Prompt</button>
-        <button id="submit-essay" class="btn btn-success">Submit Essay</button>
+    <div class="submit-btn">
+        <button class="btn btn-primary btn-lg" id="submitButton">Submit</button>
     </div>
-    
-    <!-- Feedback Section -->
-    <div id="feedback-section" class="feedback-section">
-        <h4>Submission Feedback</h4>
-        <p><strong>Spelling Mistakes:</strong> <span id="feedback-spelling-errors">0</span></p>
-        <p><strong>Grammar Mistakes:</strong> <span id="feedback-grammar-errors">0</span></p>
-        <p><strong>Your Essay with Highlights:</strong></p>
-        <div id="feedback-essay" style="white-space: pre-wrap;"></div>
-        <h5>Suggested Corrections:</h5>
-        <ul id="corrections-list"></ul>
+
+    <!-- Results Section -->
+    <div class="results-box mt-4">
+        <div class="score-box">
+            <h3>Results</h3>
+            <p>Total Score: <span id="score">0</span></p>
+        </div>
+        <div>
+            <h5>Spelling Mistakes</h5>
+            <ul id="spellingErrorList" class="error-list"></ul>
+        </div>
+        <div>
+            <h5>Grammar Mistakes</h5>
+            <ul id="grammarErrorList" class="error-list"></ul>
+        </div>
+        <div>
+            <h5>Improved Essay</h5>
+            <p id="improvedEssay">Your improved essay will be displayed here.</p>
+        </div>
     </div>
 </div>
 
@@ -93,152 +102,119 @@
     const prompts = [
         "India Gate",
         "Urbanization & Deforestation",
-        "Internet Has Changed the World",
+        "Internet has Changed the World",
         "The Power of Habits",
         "Grading System in Schools",
         "Impact of Plastic Pollution on the Environment",
         "Influence of Social Media",
         "Role of Physical Activity in Mental Health",
-        "How Education Has Changed Your Life",
+        "How Education has Changed Your Life",
         "Importance of Self-Study",
         "Access to Health Care",
         "Environment",
         "Education System"
     ];
-    let currentPrompt = "";
-    let backspaceCount = 0;
-    let spellingErrors = 0;
-    let grammarErrors = 0;
-    let totalScore = 100;
+
+    // Timer
+    let timeRemaining = 1200;
     let timerInterval;
+    const timerElement = document.getElementById('timer');
 
-    const dictionary = {
-        "vacation": "vacation",
-        "president": "president",
-        "skill": "skill",
-        "learn": "learn",
-        "memorable": "memorable",
-        "childhood": "childhood",
-        "event": "event",
-        // Add more words for spell-checking
-    };
-
-    function getNewPrompt() {
-        currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-        document.getElementById('prompt-text').innerText = currentPrompt;
-        resetStats();
-    }
-
-    function resetStats() {
-        document.getElementById('essay-input').value = "";
-        document.getElementById('feedback-section').style.display = 'none';
-        backspaceCount = 0;
-        spellingErrors = 0;
-        grammarErrors = 0;
-        totalScore = 100;
-        updateDisplay();
-        startTimer(20); // Set timer to 5 minutes
-    }
-
-    function updateDisplay() {
-        document.getElementById('backspace-count').innerText = backspaceCount;
-        document.getElementById('spelling-errors').innerText = spellingErrors;
-        document.getElementById('grammar-errors').innerText = grammarErrors;
-        document.getElementById('total-score').innerText = Math.max(totalScore, 0); // Ensure score is non-negative
-    }
-
-    function calculateScore() {
-        const essay = document.getElementById('essay-input').value;
-        const words = essay.split(/\s+/);
-        
-        spellingErrors = words.filter(word => !dictionary[word.toLowerCase()] && word).length;
-        grammarErrors = Math.floor(spellingErrors / 3); // Simplistic grammar error estimate
-        totalScore = Math.max(100 - (spellingErrors + grammarErrors * 2 + backspaceCount * 0.5), 0); // Non-negative score
-        
-        updateDisplay();
-    }
-
-    function highlightErrors(text) {
-        const words = text.split(/\s+/);
-        return words.map(word => {
-            if (!dictionary[word.toLowerCase()]) {
-                return `<span class="error-highlight">${word}</span>`;
-            }
-            return word;
-        }).join(' ');
-    }
-
-    function getCorrections(text) {
-        const words = text.split(/\s+/);
-        const corrections = [];
-
-        words.forEach(word => {
-            const lowerWord = word.toLowerCase();
-            if (!dictionary[lowerWord] && word) {
-                // Simulate a correction suggestion by replacing with correct word (or close match)
-                const suggestedCorrection = dictionary[lowerWord] || `suggested correction for "${word}"`;
-                corrections.push(`${word} -> ${suggestedCorrection}`);
-            }
-        });
-        
-        return corrections;
-    }
-
-    function startTimer(minutes) {
+    function startTimer() {
         clearInterval(timerInterval);
-        let timeRemaining = minutes * 60;
-        
+        timeRemaining = 1200;
         timerInterval = setInterval(() => {
-            const minutes = Math.floor(timeRemaining / 60);
-            const seconds = timeRemaining % 60;
-            document.getElementById('timer').innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            
             if (timeRemaining <= 0) {
                 clearInterval(timerInterval);
-                alert("Time's up!");
-                document.getElementById('submit-essay').click();
+                submitEssay();
+                return;
             }
-            
             timeRemaining--;
+            let minutes = Math.floor(timeRemaining / 60);
+            let seconds = timeRemaining % 60;
+            timerElement.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }, 1000);
     }
+    startTimer();
 
-    document.getElementById('essay-input').addEventListener('input', (event) => {
-        if (event.inputType === 'deleteContentBackward') {
-            backspaceCount++;
-        }
-        calculateScore();
+    // Stats Tracking
+    const essayEditor = document.getElementById('essayEditor');
+    const wordCountElement = document.getElementById('wordCount');
+    const grammarMistakesElement = document.getElementById('grammarMistakes');
+    const spellingMistakesElement = document.getElementById('spellingMistakes');
+    const backspaceCountElement = document.getElementById('backspaceCount');
+    let backspaceCount = 0;
+
+    essayEditor.addEventListener('input', updateStats);
+    essayEditor.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace') backspaceCount++;
+        backspaceCountElement.innerText = backspaceCount;
     });
 
-    document.getElementById('new-prompt').addEventListener('click', getNewPrompt);
+    function updateStats() {
+        let text = essayEditor.value;
+        let words = text.match(/\b[-?(\w+)?]+\b/g) || [];
+        wordCountElement.innerText = words.length;
 
-    document.getElementById('submit-essay').addEventListener('click', () => {
-        const essay = document.getElementById('essay-input').value;
-        const wordCount = essay.split(/\s+/).filter(word => word).length;
-        
-        if (wordCount < 200) {
-            alert("Your essay must be at least 200 words.");
+        // Placeholder Grammar and Spelling Checks
+        let grammarMistakes = Math.floor(words.length / 20);
+        let spellingMistakes = Math.floor(words.length / 25);
+        grammarMistakesElement.innerText = grammarMistakes;
+        spellingMistakesElement.innerText = spellingMistakes;
+    }
+
+    function changePrompt() {
+        const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+        document.getElementById("selectedPrompt").innerText = "Prompt: " + randomPrompt;
+        essayEditor.value = "";
+        backspaceCount = 0;
+        backspaceCountElement.innerText = backspaceCount;
+        startTimer();
+        resetResults();
+    }
+
+    function resetResults() {
+        document.getElementById("score").innerText = "0";
+        document.getElementById("spellingErrorList").innerHTML = "";
+        document.getElementById("grammarErrorList").innerHTML = "";
+        document.getElementById("improvedEssay").innerText = "Your improved essay will be displayed here.";
+        essayEditor.disabled = false;
+        submitButton.disabled = false;
+    }
+
+    function displayResults() {
+        const spellingErrorList = document.getElementById('spellingErrorList');
+        spellingErrorList.innerHTML = "<li>Simulated spelling error: 'recieve' (should be 'receive')</li>";
+
+        const grammarErrorList = document.getElementById('grammarErrorList');
+        grammarErrorList.innerHTML = "<li>Simulated grammar error: 'He go to school' (should be 'He goes to school')</li>";
+
+        let score = Math.min(100, 100 - (backspaceCount * 0.5 + parseInt(grammarMistakesElement.innerText) * 2 + parseInt(spellingMistakesElement.innerText) * 2));
+        document.getElementById('score').innerText = score.toFixed(2);
+
+        // Highlight Improvements
+        const improvedEssay = essayEditor.value
+            .replace(/\brecieve\b/g, "<span class='highlight'>receive</span>")
+            .replace(/\bgo\b/g, "<span class='highlight'>goes</span>");
+
+        document.getElementById('improvedEssay').innerHTML = improvedEssay;
+    }
+
+    const submitButton = document.getElementById('submitButton');
+    submitButton.addEventListener('click', submitEssay);
+
+    function submitEssay() {
+        if (parseInt(wordCountElement.innerText) < 200) {
+            alert("Please write at least 200 words.");
             return;
         }
         
-        document.getElementById('feedback-section').style.display = 'block';
-        document.getElementById('feedback-spelling-errors').innerText = spellingErrors;
-        document.getElementById('feedback-grammar-errors').innerText = grammarErrors;
-        document.getElementById('feedback-essay').innerHTML = highlightErrors(essay); // Show highlighted errors
+        clearInterval(timerInterval);
+        essayEditor.disabled = true;
+        submitButton.disabled = true;
 
-        // Display correction suggestions
-        const corrections = getCorrections(essay);
-        const correctionsList = document.getElementById('corrections-list');
-        correctionsList.innerHTML = "";
-        corrections.forEach(correction => {
-            const li = document.createElement("li");
-            li.innerText = correction;
-            correctionsList.appendChild(li);
-        });
-    });
-
-    window.onload = getNewPrompt;
+        displayResults();
+    }
 </script>
-
 </body>
 </html>
